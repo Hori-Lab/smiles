@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Practice writing SMILES from chemical structures">
+  <title>Miles of SMILES</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main class="workspace">
+    <header class="intro">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <div>
+        <h1>Miles of SMILES</h1>
+        <p>Practice writing SMILES from chemical structures</p>
+      </div>
+    </header>
+
+    <noscript><p class="load-state">Enable JavaScript to use Miles of SMILES.</p></noscript>
+    <div id="load-state" class="load-state" hidden>
+      <p id="load-message" role="status"></p>
+      <button class="primary" id="retry-questions" type="button" hidden>Try again</button>
+    </div>
+
+    <section id="practice" aria-label="Practice" hidden>
+      <div class="settings">
+        <fieldset>
+          <legend>Answer mode</legend>
+          <div class="segments">
+            <label><input type="radio" name="mode" value="choice" checked><span>Multiple choice</span></label>
+            <label><input type="radio" name="mode" value="text"><span>Free text</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Difficulty</legend>
+          <div class="segments">
+            <label><input type="radio" name="difficulty" value="beginner" checked><span>Beginner</span></label>
+            <label><input type="radio" name="difficulty" value="intermediate"><span>Intermediate</span></label>
+            <label><input type="radio" name="difficulty" value="advanced"><span>Advanced</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="exercise">
+        <section class="card structure" aria-labelledby="structure-heading">
+          <div class="structure-header">
+            <h2 id="structure-heading" tabindex="-1">Chemical structure</h2>
+            <p id="progress"></p>
+          </div>
+          <div class="image-frame">
+            <img id="structure-image" width="680" height="420" alt="Two-dimensional chemical structure for this question">
+            <div id="image-error" hidden>
+              <p>The structure image could not be loaded.</p>
+              <button id="retry-image" class="primary" type="button">Try again</button>
+            </div>
+          </div>
+          <p id="stereo-hint" class="hint" hidden>Include the stereochemistry shown in the structure.</p>
+        </section>
+
+        <section class="card answer" aria-labelledby="answer-heading">
+          <h2 id="answer-heading"></h2>
+          <p id="answer-instructions" class="hint"></p>
+          <div id="choices" class="choices"></div>
+          <form id="answer-form" novalidate hidden>
+            <label for="smiles-input">Your SMILES</label>
+            <input id="smiles-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+                   autocorrect="off" enterkeyhint="done" aria-describedby="answer-instructions">
+            <div class="form-actions">
+              <button id="check-answer" class="primary" type="submit" disabled>Check answer</button>
+              <button id="retry-engine" class="secondary" type="button" hidden>Retry loading</button>
+            </div>
+            <p id="engine-status" class="hint" role="status"></p>
+          </form>
+          <div id="feedback" aria-live="polite" aria-atomic="true">
+            <div id="feedback-card" class="feedback-card" hidden>
+              <p id="result-message"></p>
+              <p id="answer-example" hidden>Example answer <code id="correct-smiles"></code></p>
+            </div>
+          </div>
+          <button id="next-question" class="primary next" type="button" hidden>OK <span aria-hidden="true">→</span></button>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

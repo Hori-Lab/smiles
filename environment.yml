@@ -1,0 +1,8 @@
+name: smiles-practice
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - rdkit=2025.09.5
+  - nodejs=22

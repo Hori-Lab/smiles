@@ -1,0 +1,88 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #142f2b;
+  background: #edf3ef;
+  --ink: #142f2b;
+  --muted: #4e635b;
+  --accent: #18584b;
+  --border: #d5e2da;
+  --surface: #fff;
+  --mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid #24796a; outline-offset: 3px; }
+button:disabled { cursor: default; }
+
+.workspace { max-width: 72rem; margin-inline: auto; padding: clamp(1rem, 4vw, 3.5rem); }
+.intro { display: flex; gap: 1rem; align-items: center; margin: 0 0 2rem; }
+.intro h1 { margin: 0; font-size: clamp(1.9rem, 5vw, 3rem); letter-spacing: -.045em; line-height: 1.08; }
+.intro p { color: var(--muted); margin: .42rem 0 0; }
+.brand-mark { width: 3rem; height: 3rem; border-radius: .9rem; background: var(--accent); position: relative; flex: 0 0 auto; }
+.brand-mark::before, .brand-mark::after { content: ""; position: absolute; background: #dbf5b8; width: .9rem; height: .12rem; left: .69rem; top: 1.55rem; transform: rotate(-38deg); }
+.brand-mark::after { left: 1.39rem; transform: rotate(38deg); }
+.brand-mark i { position: absolute; width: .43rem; height: .43rem; border-radius: 50%; background: #dbf5b8; top: 1.63rem; left: .56rem; }
+.brand-mark i:nth-child(2) { top: 1.1rem; left: 1.285rem; }
+.brand-mark i:nth-child(3) { left: 2rem; }
+
+.settings { display: grid; grid-template-columns: max-content max-content; gap: 1rem 2rem; margin-bottom: 1.25rem; }
+fieldset { margin: 0; padding: 0; min-width: 0; border: 0; }
+legend, form label { font-size: .9rem; font-weight: 700; padding: 0; }
+.segments { display: flex; background: #e0eae3; padding: .25rem; border-radius: .7rem; margin-top: .45rem; gap: .18rem; }
+.segments label { position: relative; display: flex; flex: 1 1 auto; min-width: 0; }
+.segments input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.segments span { display: flex; min-height: 2.75rem; flex: 1; justify-content: center; align-items: center; padding: .4rem .8rem; text-align: center; font-size: .88rem; font-weight: 650; color: #405a51; border-radius: .48rem; cursor: pointer; }
+.segments input:checked + span { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px #15342a20; }
+.segments input:focus-visible + span { outline: 3px solid #24796a; outline-offset: 1px; }
+
+.exercise { display: grid; grid-template-columns: minmax(0, 1.21fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.card, .load-state { background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; padding: clamp(1rem, 2.5vw, 1.6rem); box-shadow: 0 5px 18px #193b2909; }
+.card h2 { font-size: 1.2rem; letter-spacing: -.018em; margin: 0; line-height: 1.3; }
+.structure-header { display: flex; gap: .65rem; justify-content: space-between; align-items: baseline; flex-wrap: wrap; }
+#progress { margin: 0; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.image-frame { min-height: 9rem; display: grid; place-items: center; margin-top: .75rem; border: 1px solid #e4ebe6; border-radius: .7rem; overflow: hidden; }
+.image-frame img { width: 100%; height: auto; display: block; }
+#image-error { text-align: center; padding: 1rem; }
+.hint { font-size: .9rem; color: var(--muted); line-height: 1.5; margin: .55rem 0 0; }
+.choices { margin-top: 1rem; display: grid; gap: .55rem; }
+.choice { width: 100%; display: grid; grid-template-columns: 1.9rem minmax(0, 1fr); gap: .65rem; align-items: center; text-align: left; border: 1px solid var(--border); border-radius: .65rem; padding: .55rem .65rem; background: #f7faf8; color: var(--ink); min-height: 3.35rem; }
+.choice-index { display: grid; place-items: center; background: #e7f0e9; font-size: .85rem; font-weight: 700; width: 1.9rem; height: 1.9rem; border-radius: .4rem; }
+code { font: .91rem/1.45 var(--mono); overflow-wrap: anywhere; }
+.choice:hover:not(:disabled) { border-color: #4a8b7b; background: #edf6ef; }
+.choice[data-selected="correct"] { border-color: #4b8b5b; background: #edf6e9; }
+.choice[data-selected="incorrect"] { border-color: #b66d60; background: #fff1ed; }
+.choice.correct-answer { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); background: #edf6e9; }
+.choice:disabled:not([data-selected], .correct-answer) { color: #455d53; }
+#answer-form { display: grid; gap: .55rem; margin-top: 1rem; }
+#smiles-input { min-height: 3.3rem; width: 100%; padding: .72rem .75rem; font: 1rem var(--mono); border: 1px solid #78998c; border-radius: .55rem; background: #fcfefc; color: var(--ink); }
+#smiles-input[aria-invalid="true"] { border-color: #ad5f53; }
+.primary, .secondary { min-height: 2.75rem; border-radius: .55rem; padding: .55rem 1rem; font-weight: 700; }
+.primary { color: #fff; background: var(--accent); border: 1px solid var(--accent); }
+.primary:hover:not(:disabled) { background: #103e35; }
+.primary:disabled { color: #435f55; background: #e8efeb; border-color: #d5e2da; }
+.secondary { border: 1px solid #78998c; color: var(--accent); background: #fff; }
+.form-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+#engine-status:empty { margin: 0; }
+.feedback-card { margin-top: 1rem; border: 1px solid #d9e9d6; border-radius: .6rem; color: #255238; background: #eef7ec; padding: .8rem .9rem; }
+.feedback-card[data-result="incorrect"], .feedback-card[data-result="input"] { color: #732e2a; background: #fff1ed; border-color: #efcfc7; }
+.feedback-card p { margin: 0; }
+#result-message { font-weight: 700; }
+#answer-example { margin-top: .45rem; font-size: .9rem; }
+#answer-example code { display: block; margin-top: .18rem; }
+.next { margin-top: .8rem; min-width: 5.5rem; }
+.next span { margin-left: .4rem; }
+
+@media (max-width: 47rem) {
+  .exercise { grid-template-columns: minmax(0, 1fr); }
+  .workspace { max-width: 38rem; }
+}
+@media (max-width: 39rem) {
+  .settings { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+  .intro { margin-bottom: 1.25rem; }
+  .segments span { padding-inline: .42rem; }
+}
