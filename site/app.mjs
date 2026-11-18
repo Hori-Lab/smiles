@@ -21,11 +21,11 @@ const answerExample = byId('answer-example');
 const catalogueUrl = new URL('./data/questions.json', import.meta.url);
 const rdkitUrl = new URL('./vendor/RDKit_minimal.js', import.meta.url);
 const difficulties = ['beginner', 'intermediate', 'advanced'];
+const letters = 'ABCD';
 let mode = 'choice';
 let difficulty = 'beginner';
-let decks;
+let sessions;
 let current;
-let answered = false;
 let engine;
 let enginePromise;
 
@@ -37,9 +37,9 @@ async function loadQuestions() {
     const response = await fetch(catalogueUrl);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const questions = await response.json();
-    decks = Object.fromEntries(difficulties.map((level) => {
+    sessions = Object.fromEntries(difficulties.map((level) => {
       if (!questions[level]?.length) throw new Error(`Missing ${level} questions`);
-      return [level, questionDeck(questions[level])];
+      return [level, { draw: questionDeck(questions[level]) }];
     }));
     showQuestion();
     practice.hidden = false;
@@ -75,7 +75,7 @@ function loadEngine() {
     .then((module) => {
       engine = module;
       engineStatus.textContent = '';
-      check.disabled = answered;
+      check.disabled = Boolean(current.result);
     })
     .catch((error) => {
       console.error(error);
@@ -96,18 +96,20 @@ function clearFeedback() {
 function loadStructure() {
   imageError.hidden = true;
   structure.hidden = false;
-  structure.src = new URL(current.image, catalogueUrl).href;
+  structure.src = new URL(current.question.image, catalogueUrl).href;
 }
 
 function showQuestion() {
-  const { question, number, total } = decks[difficulty]();
-  current = question;
-  answered = false;
+  const session = sessions[difficulty];
+  const previous = current;
+  session.current ??= { ...session.draw(), draft: '' };
+  current = session.current;
+  const { question, number, total } = current;
   next.hidden = true;
   clearFeedback();
   byId('progress').textContent = `Question ${number} of ${total}`;
   byId('stereo-hint').hidden = !question.stereo;
-  loadStructure();
+  if (current !== previous) loadStructure();
 
   const multipleChoice = mode === 'choice';
   byId('answer-heading').textContent = multipleChoice ? 'Choose the SMILES' : 'Write the SMILES';
@@ -117,14 +119,12 @@ function showQuestion() {
   choices.hidden = !multipleChoice;
   form.hidden = multipleChoice;
   input.disabled = false;
-  input.value = '';
+  input.value = current.draft;
   check.disabled = !engine;
   choices.replaceChildren();
   if (multipleChoice) {
-    const options = choicesFor(question);
-    const letters = 'ABCD';
-    const correctIndex = options.indexOf(question.smiles);
-    options.forEach((smiles, index) => {
+    current.options ??= choicesFor(question);
+    current.options.forEach((smiles, index) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'choice';
@@ -135,43 +135,59 @@ function showQuestion() {
       value.textContent = smiles;
       button.append(letter, value);
       button.addEventListener('click', () => {
-        const correct = index === correctIndex;
-        button.dataset.selected = correct ? 'correct' : 'incorrect';
-        if (!correct) choices.children[correctIndex].classList.add('correct-answer');
-        finishAnswer(correct ? 'Correct.' : `Incorrect. The correct answer is ${letters[correctIndex]}.`, correct);
+        const correct = smiles === question.smiles;
+        finishAnswer(correct ? 'Correct.' : 'Incorrect.', correct, index);
       });
       choices.append(button);
     });
   } else {
     loadEngine();
   }
+  if (current.result) showResult();
 }
 
 function showFeedback(message, result, reveal = false) {
   feedback.dataset.result = result;
   resultMessage.textContent = message;
-  if (reveal) byId('correct-smiles').textContent = current.smiles;
+  if (reveal) byId('correct-smiles').textContent = current.question.smiles;
   answerExample.hidden = !reveal;
   feedback.hidden = false;
 }
 
-function finishAnswer(message, correct, reveal = false) {
-  answered = true;
-  for (const button of choices.children) button.disabled = true;
+function showResult() {
+  const { message, correct, selected } = current.result;
+  const multipleChoice = mode === 'choice';
+  let feedbackMessage = message;
+  if (multipleChoice) {
+    for (const button of choices.children) button.disabled = true;
+    if (selected !== undefined) {
+      choices.children[selected].dataset.selected = correct ? 'correct' : 'incorrect';
+    }
+    if (!correct) {
+      const correctIndex = current.options.indexOf(current.question.smiles);
+      choices.children[correctIndex].classList.add('correct-answer');
+      feedbackMessage += ` The correct answer is ${letters[correctIndex]}.`;
+    }
+  }
   input.disabled = true;
   check.disabled = true;
-  showFeedback(message, correct ? 'correct' : 'incorrect', reveal);
+  showFeedback(feedbackMessage, correct ? 'correct' : 'incorrect', !multipleChoice && !correct);
   next.hidden = false;
+}
+
+function finishAnswer(message, correct, selected) {
+  current.result = { message, correct, selected };
+  showResult();
   next.focus();
 }
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();
-  if (answered || !engine) return;
+  if (current.result || !engine) return;
   clearFeedback();
   let result;
   try {
-    result = gradeAnswer(engine, input.value, current.smiles);
+    result = gradeAnswer(engine, input.value, current.question.smiles);
   } catch (error) {
     console.error(error);
     showFeedback('The answer could not be checked. Try again.', 'input');
@@ -182,9 +198,9 @@ form.addEventListener('submit', (event) => {
     showFeedback('Enter a SMILES to check your answer.', 'input');
     input.focus();
   } else if (result === 'invalid') {
-    finishAnswer('Invalid SMILES. Check the syntax.', false, true);
+    finishAnswer('Invalid SMILES. Check the syntax.', false);
   } else if (result === 'incorrect') {
-    finishAnswer('Incorrect. This SMILES describes a different structure.', false, true);
+    finishAnswer('Incorrect. This SMILES describes a different structure.', false);
   } else {
     finishAnswer('Correct.', true);
   }
@@ -206,9 +222,12 @@ byId('retry-image').addEventListener('click', loadStructure);
 retryQuestions.addEventListener('click', loadQuestions);
 retryEngine.addEventListener('click', loadEngine);
 input.addEventListener('input', () => {
-  if (!answered && !feedback.hidden) clearFeedback();
+  current.draft = input.value;
+  if (!current.result && !feedback.hidden) clearFeedback();
 });
 next.addEventListener('click', () => {
+  if (!current.result) return;
+  sessions[difficulty].current = undefined;
   showQuestion();
   heading.focus();
 });
