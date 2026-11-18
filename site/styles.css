@@ -77,6 +77,9 @@ code { font: .91rem/1.45 var(--mono); overflow-wrap: anywhere; }
 .next { margin-top: .8rem; min-width: 5.5rem; }
 .next span { margin-left: .4rem; }
 
+.site-footer { padding: 0 1rem 1.5rem; color: var(--muted); font-size: .8rem; text-align: center; }
+.site-footer a { color: inherit; text-underline-offset: .15em; }
+
 @media (max-width: 47rem) {
   .exercise { grid-template-columns: minmax(0, 1fr); }
   .workspace { max-width: 38rem; }
